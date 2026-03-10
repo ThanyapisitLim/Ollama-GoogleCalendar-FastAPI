@@ -15,9 +15,16 @@ def ai(prompt: str = Query(...)):
     action = result.get("action")
     args = result.get("args", {})
     
+    if action == "error":
+        return result
+    
+    if action == "talk":
+        return args.get("message", "I'm not sure how to respond to that.")
+
     try:
         if action == "create_event":
-            return create_event(args["summary"], args["start"], args["end"])
+            summary = args.get("summary") or args.get("title")
+            return create_event(summary, args["start"], args["end"])
         elif action == "get_free_time":
             return get_free_time(args["time_min"], args["time_max"])
         elif action == "get_events":
@@ -25,7 +32,8 @@ def ai(prompt: str = Query(...)):
         elif action == "delete_event":
             return delete_event(args["event_id"])
         elif action == "update_event":
-            return update_event(args["event_id"], args["summary"], args["start"], args["end"])
+            summary = args.get("summary") or args.get("title")
+            return update_event(args["event_id"], summary, args["start"], args["end"])
         
         return {"error": f"Action '{action}' not implemented"}
     except Exception as e:
